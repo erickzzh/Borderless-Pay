@@ -1,0 +1,34 @@
+query GetPendingPayment{
+  description: "this allows the user to get all the pending payments"
+  statement:
+    SELECT org.acme.BankingGroup.payment
+      WHERE (status == "PENDING" AND (from == _$bankid OR to == _$bankid))
+}
+
+query GetApprovedPayment{
+  description: "this allows the user to get all the approved payments"
+  statement:
+    SELECT org.acme.BankingGroup.payment
+      WHERE (status == "APPROVED" AND (from == _$bankid OR to == _$bankid))
+}
+
+query GetAuditingPayment{
+  description: "this allows the user to get all the approved payments"
+  statement:
+    SELECT org.acme.BankingGroup.payment
+      WHERE (status == "APPROVED" AND (from == _$bankid OR to == _$bankid) )
+}
+
+query GetDeniedPayment{
+  description: "this allows the user to get all the denied payments"
+  statement:
+    SELECT org.acme.BankingGroup.payment
+      WHERE (status == "DENIED")
+}
+
+query GetMyPayment{
+  description: "This allows the banks to get their own payment"
+  statement:
+    SELECT org.acme.BankingGroup.payment
+      WHERE (from == _$bankid OR to == _$bankid)
+}

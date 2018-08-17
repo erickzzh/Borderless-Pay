@@ -1,0 +1,111 @@
+rule BankCreateAsset{
+    description: "Allow banks to view their own assets"
+    participant: "org.acme.BankingGroup.Bank"
+    operation: READ,CREATE,UPDATE
+    resource: "org.acme.BankingGroup.payment"
+    action: ALLOW
+}
+
+rule BankViewAsset{
+    description: "Allow banks to view their own assets"
+    participant(b1): "org.acme.BankingGroup.Bank"
+    operation: READ
+    resource(b2): "org.acme.BankingGroup.payment"
+    condition: (b1.getIdentifier()==b2.from.getIdentifier() || b1.getIdentifier()==b2.to.getIdentifier())//only if it is looking at its own stuff
+    action: ALLOW
+}
+
+rule BankSeeAllBank{
+    description: "Allow banks to see what banks are within the network"
+    participant: "org.acme.BankingGroup.Bank"
+    operation: READ,UPDATE
+    resource: "org.acme.BankingGroup.Bank"
+    action: ALLOW
+}
+//There is a bug here, this rule allows banks to update eacher other's bank balance need to fix but can leave it for now for the demo
+
+
+rule BankSubmitTrans{
+    description: "Allow banks to submit transcations"
+    participant: "org.acme.BankingGroup.Bank"
+    operation: CREATE,READ
+    resource: "org.acme.BankingGroup.regularAudit"
+    action: ALLOW
+}
+
+rule Regulator1{
+    description: "regulator can see assets that was assigned to him/her"
+    participant(b1): "org.acme.BankingGroup.Regulator"
+    operation: READ
+    resource(b2): "org.acme.BankingGroup.regularAudit"
+    condition: (b1.getIdentifier() == b2.payment.networkRegulator.getIdentifier())
+    action: ALLOW
+}
+
+rule Regulator2{
+    description: "Allows the regulator to see the newest transcation that is assigned to him/her"
+    participant(b1): "org.acme.BankingGroup.Regulator"
+    operation: READ,UPDATE
+    resource(b2): "org.acme.BankingGroup.payment"
+    condition: (b1.getIdentifier() == b2.networkRegulator.getIdentifier())
+    action: ALLOW
+}
+
+rule Regulator3{
+    description: "Allows the regulator submit the decision"
+    participant(b1): "org.acme.BankingGroup.Regulator"
+    operation: CREATE,READ
+    resource(b2): "org.acme.BankingGroup.auditProcess"
+    condition: (b1.getIdentifier() == b2.payment.networkRegulator.getIdentifier())
+    action: ALLOW
+}
+
+rule Regulator4{
+    description: "Allow regulators to approve the asset and update the account balanc"
+    participant: "org.acme.BankingGroup.Regulator"
+    operation: READ,UPDATE
+    resource: "org.acme.BankingGroup.Bank"
+    action: ALLOW
+}
+
+rule GovermentAgenciesRights{
+    description: "Allow the record keepers to view its own country's trans"
+    participant(b1): "org.acme.BankingGroup.GovermentAgencies"
+    operation: READ
+    resource(b2): "org.acme.BankingGroup.payment"
+    condition: (b1.getIdentifier() ==b2.senderAgent.getIdentifier() || b1.getIdentifier() ==b2.receiverAgent.getIdentifier())//only if it is looking at its own stuff
+    action: ALLOW
+}
+
+rule GovermentAgenciesRights2{
+    description: "Allow the record keepers to view its own country's trans"
+    participant(b1): "org.acme.BankingGroup.GovermentAgencies"
+    operation: READ
+    resource(b2): "org.acme.BankingGroup.regularAudit"
+    condition: (b1.getIdentifier() ==b2.payment.senderAgent.getIdentifier() || b1.getIdentifier() ==b2.payment.receiverAgent.getIdentifier())//only if it is looking at its own stuff
+    action: ALLOW
+}
+//special access//
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+rule AllAccess {
+    description: "AllAccess - grant everything to everybody."
+    participant: "org.hyperledger.composer.system.Participant"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
